@@ -2221,11 +2221,10 @@ class Markdown(object):
     def _do_underline(self, text):
         text = self._underline_re.sub(r"<u>\1</u>", text)
         return text
-    
-    _tg_spoiler_re = re.compile(r"\|\|(?=\S)(.+?)(?<=\S)\|\|", re.S)
+
+    _tg_spoiler_re = re.compile(r"\|\|\s?(.+?)\s?\|\|", re.S)
     def _do_tg_spoiler(self, text):
-        text = self._tg_spoiler_re.sub(r"<tg-spoiler>\1</tg-spoiler>", text)
-        return text
+        return self._tg_spoiler_re.sub(r"<tg-spoiler>\1</tg-spoiler>", text)
 
     _strong_re = re.compile(r"(\*\*|__)(?=\S)(.+?[*_]*)(?<=\S)\1", re.S)
     _em_re = re.compile(r"(\*|_)(?=\S)(.+?)(?<=\S)\1", re.S)
