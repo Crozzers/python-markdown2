@@ -2646,6 +2646,44 @@ class Mermaid(FencedCodeBlocks):
         return super().tags(lexer_name)
 
 
+class EMPreProcessor(Extra, ABC):
+    name = 'em-preprocessor'
+    order = Stage.before(Stage.ITALIC_AND_BOLD)
+
+    def run(self, text):
+        pass
+
+    def test(self, text):
+        return '*' in text or '_' in text
+
+
+class CodeFriendly(Extra):
+    name = 'code-friendly'
+    order = Stage.before(Stage.ITALIC_AND_BOLD)
+
+    strong_re = re.compile(r"\*\*(?=\S)(.+?[*_]*)(?<=\S)\*\*", re.S)
+    em_re = r"\*(?=\S)(.+?)(?<=\S)\*"
+
+    def run(self, text: str) -> str:
+        pass
+
+    def test(self, text: str) -> bool:
+        return '*' in text or '_' in text
+
+
+class MiddleWordEm(Extra):
+    name = 'middle-word-em'
+    order = Stage.before(Stage.ITALIC_AND_BOLD, CodeFriendly)
+
+    def run(self, text: str) -> str:
+        if CodeFriendly.name in self.md.extras:
+            cf_em_re = r'(?<=\b)%s(?=\b)' % CodeFriendly.em_re
+            text = re.sub(cf_em_re, r'<strong>\2</strong>')
+
+    def test(self, text: str) -> bool:
+        return '*' in text or '_' in text
+
+
 class Numbering(Extra):
     '''
     Support of generic counters.  Non standard extension to
