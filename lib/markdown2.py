@@ -1454,7 +1454,10 @@ class Markdown:
                     tokens.append(self._hash_span(self._sanitize_html(is_comment.group(3))))
                 elif self._is_unescaped_re.match(token) is None:
                     # if the HTML is escaped then escape any special chars and add the token as-is
-                    tokens.append(self._escape_special_chars(token))
+                    tokens.append(
+                        # HTML can be snuck into escaped comment bodies - #721
+                        self._sanitize_html(self._escape_special_chars(token))
+                    )
                 else:
                     tokens.append(self._hash_span(self._sanitize_html(token)))
             elif is_html_markup and is_code:
@@ -1496,10 +1499,11 @@ class Markdown:
             return self.html_removed_text
         elif self.safe_mode == "escape":
             replacements = [
-                ('&', '&amp;'),
                 ('<', '&lt;'),
                 ('>', '&gt;'),
             ]
+            # use a smart ampersand sub to avoid re-sanitizing stuff like `&lt;`
+            s = _AMPERSAND_RE.sub('&amp;', s)
             for before, after in replacements:
                 s = s.replace(before, after)
             return s
