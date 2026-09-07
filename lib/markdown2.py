@@ -1397,9 +1397,12 @@ class Markdown:
         return ''.join(escaped)
 
     def _is_auto_link(self, text):
-        if ':' in text and self._auto_link_re.match(text):
-            return True
-        elif '@' in text and self._auto_email_link_re.match(text):
+        if ':' in text:
+            autolink_match = self._auto_link_re.match(text)
+            if autolink_match:
+                return self.safe_mode is None or self._safe_href.match(autolink_match.group(1))
+
+        if '@' in text and self._auto_email_link_re.match(text):
             return True
         return False
 
